@@ -1,0 +1,15 @@
+CREATE tablespace one_data LOCATION '/datafile/data/';
+CREATE tablespace one_index LOCATION '/datafile/index/';
+CREATE USER one with password 'xxxxxx' superuser;
+drop USER one;
+CREATE DATABASE one WITH OWNER one;
+SELECT * FROM pg_user WHERE usename = 'one';
+CREATE USER  haunte with password 'xxxxxx';
+CREATE ROLE users_haunte;
+CREATE SCHEMA AUTHORIZATION haunte;
+ALTER DATABASE one SET search_path TO haunte;
+ALTER TABLESPACE one_data OWNER TO users_haunte;
+ALTER TABLESPACE one_index OWNER TO users_haunte;
+grant users_haunte to haunte;
+alter tablespace one_index set ( seq_page_cost = 6 );
+alter tablespace one_data set ( seq_page_cost = 6 );
