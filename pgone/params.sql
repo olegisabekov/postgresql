@@ -1,26 +1,19 @@
-drop view viud_one_param_float;
 drop view viud_one_param_date;
-drop view viud_one_param_timestamp;
+drop view viud_one_param_number;
 drop view viud_one_param_money;
-drop view viud_one_param_integer;
-drop view viud_one_param_smalstr;
-drop view viud_one_param_mediumstr;
-drop view viud_one_param_bigstr;
-drop table one_param_float;
+drop view viud_one_param_string;
+drop function f_add_one_param;
 drop table one_param_date;
-drop table one_param_timestamp;
-drop table one_param_bigstr;
-drop table one_param_mediumstr;
-drop table one_param_smalstr;
-drop table one_param_integer;
+drop table one_param_string;
+drop table one_param_number;
 drop table one_param_money;
 drop table one_param_ext;
 drop table one_param_grp_lev;
 drop table one_param;
-drop table one_param_type;
+drop table one_namespace;
 drop sequence seq_one_param_group_level;
 
-create table one_param_type
+create table one_namespace
 (
   id smallint not null,
   name varchar(200) not null,
@@ -31,13 +24,13 @@ create table one_param_type
 create table one_param
 (
   id serial,
-  opt_id smallint,
+  ons_id smallint,
   name varchar(200),
   constraint one_param_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_opt_id_fk foreign key ( opt_id ) references one_param_type (id)
+  constraint one_param_ons_id_fk foreign key ( ons_id ) references one_namespace (id)
 ) tablespace one_data;
 
-create unique index one_param_opt_name_opt_id_inx on one_param ( opt_id, name ) tablespace one_index;
+create unique index one_param_opt_name_ons_id_inx on one_param ( ons_id, name ) tablespace one_index;
 create index one_param_name_inx on one_param ( name ) tablespace one_index;
 
 create sequence seq_one_param_group_level start with 1 increment by 1 cache 20;
@@ -79,45 +72,28 @@ create table one_param_ext
 create index one_param_ext_opid_inx on one_param_ext( op_id );
 create index one_param_ext_dc_inx on one_param_ext( day_create );
 
-create table one_param_integer
+create table one_param_number
 (
   id integer,
-  value integer,
-  constraint one_param_integer_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_integer_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
+  value_int integer,
+  value_float float,
+  constraint one_param_number_id_pk primary key ( id ) using index tablespace one_index,
+  constraint one_param_number_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
 ) tablespace one_data;
 
-create index one_param_integer_id_inx on one_param_integer( id ) tablespace one_index;
+create index one_param_number_id_inx on one_param_number( id ) tablespace one_index;
 
-create table one_param_smalstr
+create table one_param_string
 (
   id integer,
-  value varchar(100),
-  constraint one_param_smalstr_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_smalstr_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
+  value_smal varchar(100),
+  value_medium varchar(1000),
+  value_big varchar(2000),
+  constraint one_param_string_id_pk primary key ( id ) using index tablespace one_index,
+  constraint one_param_string_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
 ) tablespace one_data;
 
-create index one_param_smalstr_id_inx on one_param_smalstr( id ) tablespace one_index;
-
-create table one_param_mediumstr
-(
-  id integer,
-  value varchar(1000),
-  constraint one_param_mediumstr_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_mediumstr_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
-) tablespace one_data;
-
-create index one_param_mediumstr_id_inx on one_param_mediumstr( id ) tablespace one_index;
-
-create table one_param_bigstr
-(
-  id integer,
-  value varchar(2000),
-  constraint one_param_bigstr_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_bigstr_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
-) tablespace one_data;
-
-create index one_param_bigstr_id_inx on one_param_bigstr( id ) tablespace one_index;
+create index one_param_string_id_inx on one_param_string( id ) tablespace one_index;
 
 create table one_param_money
 (
@@ -132,53 +108,43 @@ create index one_param_money_id_inx on one_param_money( id ) tablespace one_inde
 create table one_param_date
 (
   id integer,
-  value date,
+  value_date date,
+  value_ts timestamp,
+  day date generated always as (date_trunc('day', value_ts)),
   constraint one_param_date_id_pk primary key ( id ) using index tablespace one_index,
   constraint one_param_date_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
 ) tablespace one_data;
 
 create index one_param_date_id_inx on one_param_date( id ) tablespace one_index;
 
-create table one_param_timestamp
-(
-  id integer,
-  value timestamp,
-  day date generated always as (date_trunc('day', value)),
-  constraint one_param_timestamp_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_timestamp_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
-) tablespace one_data;
+create or replace function f_add_one_param( p_ons_id smallint, p_name varchar)
+returns integer as $$
+declare
+  result integer;
+begin
+  with inserted as
+	  ( insert into one_param( ons_id, name ) values( p_ons_id, p_name ) on conflict (ons_id, name) do nothing returning id )
+	select id into result
+		from inserted
+	union all
+		select id from one_param where ons_id = p_ons_id and name = p_name;
+	return result;
+end;
+$$ language plpgsql;
 
-create index one_param_timestamp_date_inx on one_param_timestamp((date_trunc('day', value)));
-
-create table one_param_float
-(
-  id integer,
-  value float,
-  constraint one_param_float_id_pk primary key ( id ) using index tablespace one_index,
-  constraint one_param_float_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
-) tablespace one_data;
-
-create index one_param_float_id_inx on one_param_float( id ) tablespace one_index;
-
-create or replace function fiud_one_param_integer() returns trigger as
-$fiud_one_param_integer$
+create or replace function fiud_one_param_number() returns trigger as
+$fiud_one_param_number$
 declare
   v_op_id integer;
   v_ope_id integer;
 begin
   if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
+    v_op_id := f_add_one_param(new.ons_id, new.name);
     insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_integer values( v_ope_id, new.value );
+    insert into one_param_number( id, value_int, value_float ) values( v_ope_id, new.value_int, new.value_float );
     return new;
   elsif( tg_op = 'UPDATE' )then
-    update one_param_smalstr set value = new.value
+    update one_param_number set value_int = new.value_int, value_float = new.value_float
       where id = new.id;
     return new;
   elsif( tg_op = 'DELETE' )then
@@ -187,44 +153,39 @@ begin
   end if;
   return null;
 end
-$fiud_one_param_integer$
+$fiud_one_param_number$
 language plpgsql;
 
-create or replace view viud_one_param_integer( id, opt_id, name, group_level, value ) as
+create or replace view viud_one_param_number( id, ons_id, name, group_level, value_int, value_float ) as
   select 
    ope.id,
-   op.opt_id,
+   op.ons_id,
    op.name,
    ope.group_level,
-   opi.value
+   opn.value_int,
+   opn.value_float
    from one_param op
    join one_param_ext ope on ope.op_id = op.id
-   join one_param_integer opi on opi.id = ope.id;
+   join one_param_number opn on opn.id = ope.id;
 
-create trigger tiud_one_param_integer 
-   instead of insert or update or delete on viud_one_param_integer
+create trigger tiud_one_param_number
+   instead of insert or update or delete on viud_one_param_number
    for each row
-   execute procedure fiud_one_param_integer();
+   execute procedure fiud_one_param_number();
 
-create or replace function fiud_one_param_smalstr() returns trigger as
-$fiud_one_param_smalstr$
+create or replace function fiud_one_param_string() returns trigger as
+$fiud_one_param_string$
 declare
   v_op_id integer;
   v_ope_id integer;
 begin
   if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
+    v_op_id := f_add_one_param(new.ons_id, new.name);
     insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_smalstr values( v_ope_id, new.value );
+    insert into one_param_string values( v_ope_id, new.value_smal, new.value_medium, new.value_big );
     return new;
   elsif( tg_op = 'UPDATE' )then
-    update one_param_smalstr set value = new.value
+    update one_param_string set value_smal = new.value_smal, value_medium = new.value_medium, value_big = new.value_big
       where id = new.id;
     return new;
   elsif( tg_op = 'DELETE' )then
@@ -233,108 +194,26 @@ begin
   end if;
   return null;
 end
-$fiud_one_param_smalstr$
+$fiud_one_param_string$
 language plpgsql;
 
-create or replace view viud_one_param_smalstr( id, opt_id, name, group_level, value ) as
+create or replace view viud_one_param_string( id, ons_id, name, group_level, value_smal, value_medium, value_big ) as
   select 
    ope.id,
-   op.opt_id,
+   op.ons_id,
    op.name,
    ope.group_level,
-   opss.value
+   ops.value_smal,
+   ops.value_medium,
+   ops.value_big
    from one_param op
    join one_param_ext ope on ope.op_id = op.id
-   join one_param_smalstr opss on opss.id = ope.id;
+   join one_param_string ops on ops.id = ope.id;
 
-create trigger tiud_one_param_smalstr
-   instead of insert or update or delete on viud_one_param_smalstr
+create trigger tiud_one_param_string
+   instead of insert or update or delete on viud_one_param_string
    for each row
-   execute procedure fiud_one_param_smalstr();
-
-create or replace function fiud_one_param_mediumstr() returns trigger as
-$fiud_one_param_mediumstr$
-declare
-  v_op_id integer;
-  v_ope_id integer;
-begin
-  if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
-    insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_mediumstr values( v_ope_id, new.value );
-    return new;
-  elsif( tg_op = 'UPDATE' )then
-    update one_param_mediumstr set value = new.value
-      where id = new.id;
-    return new;
-  elsif( tg_op = 'DELETE' )then
-    delete from one_param_ext where id = old.id;
-    return old;
-  end if;
-  return null;
-end
-$fiud_one_param_mediumstr$
-language plpgsql;
-
-create or replace view viud_one_param_mediumstr( id, opt_id, name, group_level, value ) as
-  select 
-   op.id,
-   op.opt_id,
-   op.name,
-   ope.group_level,
-   opms.value
-   from one_param op
-   join one_param_ext ope on ope.op_id = op.id
-   join one_param_mediumstr opms on opms.id = ope.id;
-
-create trigger tiud_one_param_mediumstr
-   instead of insert or update or delete on viud_one_param_mediumstr
-   for each row
-   execute procedure fiud_one_param_mediumstr();
-
-create or replace function fiud_one_param_bigstr() returns trigger as
-$fiud_one_param_bigstr$
-declare
-  v_op_id integer;
-  v_ope_id integer;
-begin
-  if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
-    insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_bigstr values( v_ope_id, new.value );
-    return new;
-  end if;
-end
-$fiud_one_param_bigstr$
-language plpgsql;
-
-create or replace view viud_one_param_bigstr( id, opt_id, name, group_level, value ) as
-  select 
-   op.id,
-   op.opt_id,
-   op.name,
-   ope.group_level,
-   opbs.value
-   from one_param op
-   join one_param_ext ope on ope.op_id = op.id
-   join one_param_bigstr opbs on opbs.id = ope.id;
-
-create trigger tiud_one_param_bigstr
-   instead of insert or update or delete on viud_one_param_bigstr
-   for each row
-   execute procedure fiud_one_param_bigstr();
+   execute procedure fiud_one_param_string();
 
 create or replace function fiud_one_param_money() returns trigger as
 $fiud_one_param_money$
@@ -343,13 +222,7 @@ declare
   v_ope_id integer;
 begin
   if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
+    v_op_id := f_add_one_param(new.ons_id, new.name);
     insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
     insert into one_param_money values( v_ope_id, new.value );
     return new;
@@ -366,10 +239,10 @@ end
 $fiud_one_param_money$
 language plpgsql;
 
-create or replace view viud_one_param_money( id, opt_id, name, group_level, value ) as
+create or replace view viud_one_param_money( id, ons_id, name, group_level, value ) as
   select 
    op.id,
-   op.opt_id,
+   op.ons_id,
    op.name,
    ope.group_level,
    opm.value
@@ -382,6 +255,8 @@ create trigger tiud_one_param_money
    for each row
    execute procedure fiud_one_param_money();
 
+\echo "date"
+
 create or replace function fiud_one_param_date() returns trigger as
 $fiud_one_param_date$
 declare
@@ -389,18 +264,12 @@ declare
   v_ope_id integer;
 begin
   if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
+    v_op_id := f_add_one_param(new.ons_id, new.name);
     insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_date values( v_ope_id, new.value );
+    insert into one_param_date values( v_ope_id, new.value_date, new.value_ts );
     return new;
   elsif( tg_op = 'UPDATE' )then
-    update one_param_date set value = new.value
+    update one_param_date set value_date = new.value_date, value_ts = new.value_ts
       where id = new.id;
     return new;
   elsif( tg_op = 'DELETE' )then
@@ -412,13 +281,15 @@ end
 $fiud_one_param_date$
 language plpgsql;
 
-create or replace view viud_one_param_date( id, opt_id, name, group_level, value ) as
+create or replace view viud_one_param_date( id, ons_id, name, group_level, value_date, value_ts, day ) as
   select 
    op.id,
-   op.opt_id,
+   op.ons_id,
    op.name,
    ope.group_level,
-   opd.value
+   opd.value_date,
+   opd.value_ts,
+   opd.day
    from one_param op
    join one_param_ext ope on ope.op_id = op.id
    join one_param_date opd on opd.id = ope.id;
@@ -428,111 +299,9 @@ create trigger tiud_one_param_date
    for each row
    execute procedure fiud_one_param_date();
 
-\echo "timestamp"
-
-create or replace function fiud_one_param_timestamp() returns trigger as
-$fiud_one_param_timestamp$
-declare
-  v_op_id integer;
-  v_ope_id integer;
-begin
-  if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
-    insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_timestamp values( v_ope_id, new.value );
-    return new;
-  elsif( tg_op = 'UPDATE' )then
-    update one_param_timestamp set value = new.value
-      where id = new.id;
-    return new;
-  elsif( tg_op = 'DELETE' )then
-    delete from one_param_ext where id = old.id;
-    return old;
-  end if;
-  return null;
-end
-$fiud_one_param_timestamp$
-language plpgsql;
-
-create or replace view viud_one_param_timestamp( id, opt_id, name, group_level, value ) as
-  select 
-   op.id,
-   op.opt_id,
-   op.name,
-   ope.group_level,
-   opd.value
-   from one_param op
-   join one_param_ext ope on ope.op_id = op.id
-   join one_param_timestamp opd on opd.id = ope.id;
-
-create trigger tiud_one_param_timestamp
-   instead of insert or update or delete on viud_one_param_timestamp
-   for each row
-   execute procedure fiud_one_param_timestamp();
-
-\echo "float"
-
-create or replace function fiud_one_param_float() returns trigger as
-$fiud_one_param_float$
-declare
-  v_op_id integer;
-  v_ope_id integer;
-begin
-  if( tg_op = 'INSERT' )then
-    select id into v_op_id
-      from one_param
-        where name = new.name
-          and opt_id = new.opt_id;
-    if not found then
-      insert into one_param( opt_id, name ) values( new.opt_id, new.name ) returning id into v_op_id;
-    end if;
-    insert into one_param_ext( op_id, group_level, day_begin ) values( v_op_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_float values( v_ope_id, new.value );
-    return new;
-  elsif( tg_op = 'UPDATE' )then
-    update one_param_float set value = new.value
-      where id = new.id;
-    return new;
-  elsif( tg_op = 'DELETE' )then
-    delete from one_param_ext where id = old.id;
-    return old;
-  end if;
-  return null;
-end
-$fiud_one_param_float$
-language plpgsql;
-
-create or replace view viud_one_param_float( id, opt_id, name, group_level, value ) as
-  select 
-   op.id,
-   op.opt_id,
-   op.name,
-   ope.group_level,
-   opf.value
-   from one_param op
-   join one_param_ext ope on ope.op_id = op.id
-   join one_param_float opf on opf.id = ope.id;
-
-create trigger tiud_one_param_float
-   instead of insert or update or delete on viud_one_param_float
-   for each row
-   execute procedure fiud_one_param_float();
-
-grant all on one_param_type to users_haunte;
+grant all on one_namespace to users_haunte;
 grant all on one_param to users_haunte;
 grant all on one_param_ext to users_haunte;
-grant all on one_param_integer to users_haunte;
-grant all on one_param_smalstr to users_haunte;
-grant all on viud_one_param_integer to users_haunte;
-grant all on viud_one_param_smalstr to users_haunte;
-grant all on viud_one_param_mediumstr to users_haunte;
-grant all on viud_one_param_bigstr to users_haunte;
+grant all on one_param_number to users_haunte;
+grant all on viud_one_param_string to users_haunte;
 grant all on viud_one_param_date to users_haunte;
-grant all on viud_one_param_timestamp to users_haunte;
-grant all on viud_one_param_float to users_haunte;
