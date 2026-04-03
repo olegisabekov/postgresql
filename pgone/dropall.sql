@@ -1,11 +1,4 @@
-drop view vi_sensor_t8;
-drop view vi_sensor_t7;
-drop view viud_sensor_t3;
-drop view vi_sensor_t5;
-drop view vi_sensor_k1;
-drop view vi_sensor_t6;
-drop view vi_sensor_r1;
-drop view vi_sensor_T9;
+\i drop_sensors.sql
 drop view viud_one_param_date;
 drop view viud_one_param_money;
 drop view viud_one_param_number;
@@ -17,4 +10,6 @@ drop table one_param_money;
 drop table one_param_ext;
 drop table one_param;
 drop table one_namespace;
+drop table one_param_grp_lev;
 drop sequence seq_one_param_group_level;
+drop sequence seq_one_param_ext;
