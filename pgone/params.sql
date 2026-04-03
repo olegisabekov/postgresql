@@ -116,6 +116,7 @@ create table one_param_date
 ) tablespace one_data;
 
 create index one_param_date_id_inx on one_param_date( id ) tablespace one_index;
+create index one_param_date_day_inx on one_param_date((date_trunc('day', value_ts)::date));
 
 create or replace function f_add_one_param( p_ons_id smallint, p_name varchar)
 returns integer as $$
