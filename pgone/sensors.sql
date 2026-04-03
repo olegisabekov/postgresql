@@ -91,7 +91,7 @@ begin
           from one_param op
             join one_param_ext ope on ope.op_id = op.id
             join one_param_number opn on opn.id = ope.id
-          where op.ons_id = p_ons_id
+          where ope.ons_id = p_ons_id
         group by ope.group_level
       )
     select
@@ -111,7 +111,7 @@ begin
       join one_param_ext ope on ope.op_id = op.id
       join one_param_date oprd on oprd.id = ope.id and op.name = 'rdate'
       join opn on opn.group_level = ope.group_level
-      where op.ons_id = p_ons_id;
+      where ope.ons_id = p_ons_id;
 end;
 $$ language plpgsql;
 
