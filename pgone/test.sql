@@ -17,7 +17,7 @@ with
 				    cross join p
     				join one_param_ext pe on pe.op_id = op.id
     				join one_param_date pt on pt.id = pe.id and op.name = p.name_rdata
-  			where op.ons_id = p.ons_id
+  			where pe.ons_id = p.ons_id
   			  and pt.day in ( select day from list_days )
 			),
  t as materialized (
@@ -30,7 +30,7 @@ with
 				    cross join p
     				join one_param_ext pe on pe.op_id = op.id
     				join one_param_number pf on pf.id = pe.id and op.name = p.name_temerature
-  			where op.ons_id = p.ons_id
+  			where pe.ons_id = p.ons_id
 			)
 select
 		d.rdate,
