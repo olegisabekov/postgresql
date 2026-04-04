@@ -71,7 +71,8 @@ returns table (
         pstate integer,
         rdate timestamp,
         vcc float,
-        state integer
+        state integer,
+        test float
       ) as $$
 begin
   return query
@@ -87,7 +88,8 @@ begin
             max(case when op.name = 'pressure' then opn.value_float end) pressure,
             max(case when op.name = 'pstate' then opn.value_int end) pstate,
             max(case when op.name = 'vcc' then opn.value_float end) vcc,
-            max(case when op.name = 'state' then opn.value_int end) state
+            max(case when op.name = 'state' then opn.value_int end) state,
+            max(case when op.name = 'test' then opn.value_float end) test
           from one_param op
             join one_param_ext ope on ope.op_id = op.id
             join one_param_number opn on opn.id = ope.id
@@ -106,7 +108,8 @@ begin
       opn.pstate,
       oprd.value_ts,
       opn.vcc,
-      opn.state
+      opn.state,
+      opn.test
     from one_param op
       join one_param_ext ope on ope.op_id = op.id
       join one_param_date oprd on oprd.id = ope.id and op.name = 'rdate'
