@@ -38,7 +38,7 @@ with
 				  from one_param op
 				    cross join p
 				    join list_names ln on op.name = ln.name
-    				join one_param_ext ope on ope.op_id = op.id and op.name in (p.name_test, p.name_rdata)
+    				join one_param_ext ope on ope.op_id = op.id
   			where day_create >= p.actual_date
   			  and ope.ons_id = p.ons_id
 				  ),
