@@ -11,7 +11,7 @@ create table one_namespace
 create table one_param
 (
   id serial,
-  name varchar(200),
+  name varchar(200) not null,
   constraint one_param_id_pk primary key ( id ) using index tablespace one_index
 ) tablespace one_data;
 
@@ -57,11 +57,9 @@ create table one_param_ext
   constraint one_param_ext_group_level_fk foreign key ( group_level ) references one_param_grp_lev (id)
 ) tablespace one_data;
 
---create index one_param_ext_opid_inx on one_param_ext( op_id );
---create index one_param_ext_ons_id_inx on one_param_ext using hash ( ons_id ) tablespace one_index;
-create index one_param_ext_ons_id on one_param_ext using brin(ons_id);
-create index one_param_ext_group_level_inx on one_param_ext ( group_level ) tablespace one_index;
-create index one_param_ext_dc_inx on one_param_ext( day_create );
+create index one_param_ext_ons_id on one_param_ext using brin(op_id, ons_id) tablespace one_index;
+create unique index one_param_ext_group_level_inx on one_param_ext (op_id, group_level) tablespace one_index;
+create index one_param_ext_dc_inx on one_param_ext( day_create ) tablespace one_index;
 
 create or replace function fi_one_param_ext_id() returns trigger as 
 $$
