@@ -88,8 +88,6 @@ create table one_param_number
   constraint one_param_number_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
 ) tablespace one_data;
 
-create index one_param_number_id_inx on one_param_number( id ) tablespace one_index;
-
 create table one_param_string
 (
   id integer,
@@ -100,8 +98,6 @@ create table one_param_string
   constraint one_param_string_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
 ) tablespace one_data;
 
-create index one_param_string_id_inx on one_param_string( id ) tablespace one_index;
-
 create table one_param_money
 (
   id integer,
@@ -109,8 +105,6 @@ create table one_param_money
   constraint one_param_money_id_pk primary key ( id ) using index tablespace one_index,
   constraint one_param_money_id_fk foreign key ( id ) references one_param_ext(id) on delete cascade
 ) tablespace one_data;
-
-create index one_param_money_id_inx on one_param_money( id ) tablespace one_index;
 
 create table one_param_date
 (
