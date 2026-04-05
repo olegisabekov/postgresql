@@ -15,7 +15,7 @@ create table one_param
   constraint one_param_id_pk primary key ( id ) using index tablespace one_index
 ) tablespace one_data;
 
-create unique index one_param_opt_name_ons_id_inx on one_param ( name ) tablespace one_index;
+create unique index one_param_opt_name_inx on one_param ( name ) tablespace one_index;
 
 create sequence seq_one_param_group_level start with 1 increment by 1 cache 20;
 
@@ -58,6 +58,9 @@ create table one_param_ext
 ) tablespace one_data;
 
 --create index one_param_ext_opid_inx on one_param_ext( op_id );
+--create index one_param_ext_ons_id_inx on one_param_ext using hash ( ons_id ) tablespace one_index;
+create index one_param_ext_ons_id on one_param_ext using brin(ons_id);
+create index one_param_ext_group_level_inx on one_param_ext ( group_level ) tablespace one_index;
 create index one_param_ext_dc_inx on one_param_ext( day_create );
 
 create or replace function fi_one_param_ext_id() returns trigger as 

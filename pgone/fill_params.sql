@@ -5,7 +5,7 @@ create view vi_sensor_test( value, rdate, state ) as
       test,
       rdate,
       state
-    from f_get_one_param_number(cast(200 as smallint));
+    from f_get_one_param_number(200);
 
 create or replace function fiud_sensor_test() returns trigger as
 $fiud_sensor_test$
@@ -39,11 +39,13 @@ grant all on vi_sensor_test to users_haunte;
 
 insert into one_namespace( id, name, description ) values( 200, 'test', 'test');
 
+begin isolation level read committed;
 insert into vi_sensor_test( value, rdate, state )
   with ds as (
     SELECT generate_series(
-      '2026-04-01 00:00'::timestamp, -- Start
-      '2027-01-01 00:00'::timestamp, -- End
-      '1 hours'::interval            -- Step
+      '2022-01-01 00:00'::timestamp, -- Start
+      '2026-04-05 00:00'::timestamp, -- End
+      '1 minute'::interval            -- Step
     ) AS h )
     select random( 10.0, 40.9 ) as value, h as rdate, 0 as state from ds;
+commit;

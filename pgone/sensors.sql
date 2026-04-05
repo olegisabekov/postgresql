@@ -1,6 +1,6 @@
 \i drop_sensors.sql
 
-create procedure f_add_one_param_number( 
+create procedure add_one_param_number(
   p_ons_id smallint,
   p_temperature float default null,
   p_tstate integer default null,
@@ -8,7 +8,7 @@ create procedure f_add_one_param_number(
   p_hstate integer default null,
   p_altitude float default null,
   p_astate integer default null,
-  p_pressure float default null, 
+  p_pressure float default null,
   p_pstate integer default null,
   p_vcc float default null,
   p_state integer default null,
@@ -58,7 +58,7 @@ begin
 end;
 $$ language plpgsql;
 
-create function f_get_one_param_number( p_ons_id smallint )
+create function f_get_one_param_number( p_ons_id integer )
 returns table (
         group_level integer,
         temperature float,
@@ -119,13 +119,13 @@ end;
 $$ language plpgsql;
 
 create or replace view vi_sensor_t8( temerature, humidity, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       humidity,
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(101 as smallint));
+    from f_get_one_param_number(101);
 
 create or replace function fiud_sensor_t8() returns trigger as
 $fiud_sensor_t8$
@@ -133,7 +133,7 @@ declare
   c_ons_id constant integer := 101;
 begin
   if( tg_op = 'INSERT' )then
-    call f_add_one_param_number( 
+    call add_one_param_number(
       p_ons_id => c_ons_id::smallint,
       p_temperature => round( cast( new.temerature as numeric ), 2 ),
       p_humidity => round( cast( new.humidity as numeric ), 2 ),
@@ -157,7 +157,7 @@ create or replace trigger t_sensor_t8
      execute procedure fiud_sensor_t8();
 
 create or replace view vi_sensor_t7( temerature, tstate, humidity, hstate, pressure, pstate, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       tstate,
       humidity,
@@ -167,7 +167,7 @@ create or replace view vi_sensor_t7( temerature, tstate, humidity, hstate, press
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(100 as smallint));
+    from f_get_one_param_number(100);
 
 create or replace function fiud_sensor_t7() returns trigger as
 $fiud_sensor_t7$
@@ -175,9 +175,9 @@ declare
   c_ons_id constant integer := 100;
 begin
   if( tg_op = 'INSERT' )then
-    call f_add_one_param_number( 
-      p_ons_id => c_ons_id::smallint, 
-      p_temperature => round( cast( new.temerature as numeric ), 2 ), 
+    call add_one_param_number(
+      p_ons_id => c_ons_id::smallint,
+      p_temperature => round( cast( new.temerature as numeric ), 2 ),
       p_tstate => new.tstate,
       p_humidity => round( cast( new.humidity as numeric ), 2 ),
       p_hstate => new.hstate,
@@ -203,7 +203,7 @@ create or replace trigger ti_sensor_t7
     execute procedure fiud_sensor_t7();
 
 create or replace view vi_sensor_t3( temerature, tstate, altitude, astate, pressure, pstate, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       tstate,
       altitude,
@@ -213,7 +213,7 @@ create or replace view vi_sensor_t3( temerature, tstate, altitude, astate, press
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(103 as smallint));
+    from f_get_one_param_number(103);
 
 create or replace function fiud_sensor_t3() returns trigger as
 $fiud_sensor_t3$
@@ -221,9 +221,9 @@ declare
   c_ons_id constant integer := 103;
 begin
   if( tg_op = 'INSERT' )then
-    call f_add_one_param_number( 
-      p_ons_id => c_ons_id::smallint, 
-      p_temperature => round( cast( new.temerature as numeric ), 2 ), 
+    call add_one_param_number(
+      p_ons_id => c_ons_id::smallint,
+      p_temperature => round( cast( new.temerature as numeric ), 2 ),
       p_tstate => new.tstate,
       p_altitude => round( cast( new.altitude as numeric ), 2 ),
       p_astate => new.astate,
@@ -253,20 +253,20 @@ Flatlet/Sensor/T5/#
 */
 
 create or replace view vi_sensor_t5( temperature, humidity, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       humidity,
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(105 as smallint));
+    from f_get_one_param_number(105);
 
 create or replace function fi_sensor_t5() returns trigger as
 $fi_sensor_t5$
 declare
   c_ons_id constant smallint := 105;
 begin
-  call f_add_one_param_number( 
+  call add_one_param_number(
       p_ons_id => c_ons_id,
       p_temperature => round( cast( new.temperature as numeric ), 2 ),
       p_humidity => round( cast( new.humidity as numeric ), 2 ),
@@ -287,20 +287,20 @@ create or replace trigger ti_sensor_t5
 Flatlet/Sensor/K1/#
 */
 create or replace view vi_sensor_k1( temperature, humidity, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       humidity,
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(102 as smallint));
+    from f_get_one_param_number(102);
 
 create or replace function fi_sensor_k1() returns trigger as
 $fi_sensor_k1$
 declare
   c_ons_id constant smallint := 102;
 begin
-  call f_add_one_param_number( 
+  call add_one_param_number(
       p_ons_id => c_ons_id,
       p_temperature => round( cast( new.temperature as numeric ), 2 ),
       p_humidity => round( cast( new.humidity as numeric ), 2 ),
@@ -318,7 +318,7 @@ create or replace trigger ti_sensor_k1
     execute procedure fi_sensor_k1();
 
 create or replace view vi_sensor_t6( temperature, tstate, pressure, pstate, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       tstate,
       pressure,
@@ -326,16 +326,16 @@ create or replace view vi_sensor_t6( temperature, tstate, pressure, pstate, rdat
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(106 as smallint));
+    from f_get_one_param_number(106);
 
 create or replace function fi_sensor_t6() returns trigger as
 $fi_sensor_t6$
 declare
   c_ons_id constant smallint := 106;
 begin
-  call f_add_one_param_number( 
+  call add_one_param_number(
     p_ons_id => c_ons_id,
-    p_temperature => round( cast( new.temperature as numeric ), 2 ), 
+    p_temperature => round( cast( new.temperature as numeric ), 2 ),
     p_tstate => new.tstate,
     p_pressure => round( cast( new.pressure as numeric ), 2 ),
     p_pstate => new.pstate,
@@ -361,7 +361,7 @@ Flatlet/Sensor/T9/Humidity/Internal/State 0
 Flatlet/Sensor/T9/Humidity/Internal/% 34.8
 */
 create or replace view vi_sensor_T9( temperature, tstate, humidity, hstate, rdate, vcc, state ) as
-  select 
+  select
       temperature,
       tstate,
       humidity,
@@ -369,16 +369,16 @@ create or replace view vi_sensor_T9( temperature, tstate, humidity, hstate, rdat
       rdate,
       vcc,
       state
-    from f_get_one_param_number(cast(109 as smallint));
+    from f_get_one_param_number(109);
 
 create or replace function fi_sensor_T9() returns trigger as
 $fi_sensor_T9$
 declare
   c_ons_id constant integer := 109;
 begin
-  call f_add_one_param_number( 
-    p_ons_id => c_ons_id::smallint, 
-    p_temperature => round( cast( new.temperature as numeric ), 2 ), 
+  call add_one_param_number(
+    p_ons_id => c_ons_id::smallint,
+    p_temperature => round( cast( new.temperature as numeric ), 2 ),
     p_tstate => new.tstate,
     p_humidity => round( cast( new.humidity as numeric ), 2 ),
     p_hstate => new.hstate,
@@ -395,7 +395,7 @@ create or replace trigger ti_sensor_T9
    for each row
     execute procedure fi_sensor_T9();
 
-grant execute on procedure f_add_one_param_number to users_haunte;
+grant execute on procedure add_one_param_number to users_haunte;
 grant execute on function f_get_one_param_number to users_haunte;
 grant all on vi_sensor_t8 to users_haunte;
 grant all on vi_sensor_t7 to users_haunte;

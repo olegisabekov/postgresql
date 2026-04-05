@@ -9,15 +9,15 @@ with
  list_days as ( select day from generate_series(to_date( '01.04.2026', 'dd.mm.yyyy' ), to_date( '01.05.2026', 'dd.mm.yyyy' ), '1 day'::interval) day),
  d as materialized (
  				select
-				 		pe.id,
-						pe.group_level,
+				 		ope.id,
+						ope.group_level,
 						pt.day as rdate,
-						pe.day_create
+						ope.day_create
 				  from one_param op
 				    cross join p
-    				join one_param_ext pe on pe.op_id = op.id
-    				join one_param_date pt on pt.id = pe.id and op.name = p.name_rdata
-  			where pe.ons_id = p.ons_id
+    				join one_param_ext ope on ope.op_id = op.id
+    				join one_param_date pt on pt.id = ope.id and op.name = p.name_rdata
+  			where ope.ons_id = p.ons_id
   			  and pt.day in ( select day from list_days )
 			),
  t as materialized (

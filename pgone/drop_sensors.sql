@@ -5,5 +5,5 @@ drop view vi_sensor_t5;
 drop view vi_sensor_k1;
 drop view vi_sensor_t6;
 drop view vi_sensor_T9;
-drop procedure f_add_one_param_number;
+drop procedure add_one_param_number;
 drop function f_get_one_param_number;
