@@ -109,7 +109,6 @@ create table one_param_money
 create table one_param_date
 (
   id integer,
-  value_date date,
   value_ts timestamp,
   day date generated always as (date_trunc('day', value_ts)),
   constraint one_param_date_id_pk primary key ( id ) using index tablespace one_index,
@@ -268,10 +267,10 @@ begin
   if( tg_op = 'INSERT' )then
     v_op_id := f_add_one_param(new.name);
     insert into one_param_ext( op_id, ons_id, group_level, day_begin ) values( v_op_id, new.ons_id, new.group_level, current_date ) returning id into v_ope_id;
-    insert into one_param_date values( v_ope_id, new.value_date, new.value_ts );
+    insert into one_param_date values( v_ope_id, new.value_ts );
     return new;
   elsif( tg_op = 'UPDATE' )then
-    update one_param_date set value_date = new.value_date, value_ts = new.value_ts
+    update one_param_date set value_ts = new.value_ts
       where id = new.id;
     return new;
   elsif( tg_op = 'DELETE' )then
@@ -283,13 +282,12 @@ end
 $fiud_one_param_date$
 language plpgsql;
 
-create or replace view viud_one_param_date( id, ons_id, name, group_level, value_date, value_ts, day ) as
+create or replace view viud_one_param_date( id, ons_id, name, group_level, value_ts, day ) as
   select 
    ope.id,
    ope.ons_id,
    op.name,
    ope.group_level,
-   opd.value_date,
    opd.value_ts,
    opd.day
    from one_param op

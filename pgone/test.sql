@@ -1,12 +1,12 @@
 -- проверяем функционалтный индекс, ежедневная средний вакум за период 
-explain analyze
+--explain analyze
 with
  p as ( select
  					'rdate' as name_rdata, -- sensor date incoming
  					'test' as name_test,
  					200 as ons_id
       ),
- list_days as ( select day from generate_series(to_date( '01.04.2026', 'dd.mm.yyyy' ), to_date( '01.05.2026', 'dd.mm.yyyy' ), '1 day'::interval) day),
+ list_days as ( select day from generate_series(to_date( '01.03.2026', 'dd.mm.yyyy' ), to_date( '01.05.2026', 'dd.mm.yyyy' ), '1 day'::interval) day),
  d as materialized (
  				select
 				 		ope.id,
