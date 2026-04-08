@@ -1,9 +1,11 @@
 \i drop_sensors.sql
 drop view viud_one_param_date;
 drop view viud_one_param_money;
-drop view viud_one_param_number;
+drop view viud_one_param_integer;
+drop view viud_one_param_float;
 drop view viud_one_param_string;
-drop table one_param_number;
+drop table one_param_integer;
+drop table one_param_float;
 drop table one_param_date;
 drop table one_param_string;
 drop table one_param_money;

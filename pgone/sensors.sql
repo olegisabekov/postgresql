@@ -23,44 +23,44 @@ begin
   end if;
   insert into one_param_grp_lev( id ) values( null ) returning id into v_grp_lev_id;
   if(p_temperature is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_float ) values( p_ons_id, 'temperature', v_grp_lev_id, p_temperature);
+    insert into viud_one_param_float( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'temperature', v_grp_lev_id, p_rdate::date, p_temperature);
   end if;
   if(p_tstate is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_int ) values( p_ons_id, 'tstate', v_grp_lev_id, p_tstate );
+    insert into viud_one_param_integer( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'tstate', v_grp_lev_id, p_rdate::date, p_tstate );
   end if;
   if(p_humidity is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_float ) values( p_ons_id, 'humidity', v_grp_lev_id, p_humidity);
+    insert into viud_one_param_float( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'humidity', v_grp_lev_id, p_rdate::date, p_humidity);
   end if;
   if(p_hstate is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_int ) values( p_ons_id, 'hstate', v_grp_lev_id, p_hstate );
+    insert into viud_one_param_integer( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'hstate', v_grp_lev_id, p_rdate::date, p_hstate );
   end if;
   if(p_altitude is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_float ) values( p_ons_id, 'altitude', v_grp_lev_id, p_altitude);
+    insert into viud_one_param_float( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'altitude', v_grp_lev_id, p_rdate::date, p_altitude);
   end if;
   if(p_astate is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_int ) values( p_ons_id, 'astate', v_grp_lev_id, p_astate );
+    insert into viud_one_param_integer( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'astate', v_grp_lev_id, p_rdate::date, p_astate );
   end if;
   if(p_pressure is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_float ) values( p_ons_id, 'pressure', v_grp_lev_id, p_pressure);
+    insert into viud_one_param_float( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'pressure', v_grp_lev_id, p_rdate::date, p_pressure);
   end if;
   if(p_pstate is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_int ) values( p_ons_id, 'pstate', v_grp_lev_id, p_pstate );
+    insert into viud_one_param_integer( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'pstate', v_grp_lev_id, p_rdate::date, p_pstate );
   end if;
   if(p_vcc is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_float ) values( p_ons_id, 'vcc', v_grp_lev_id, p_vcc);
+    insert into viud_one_param_float( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'vcc', v_grp_lev_id, p_rdate::date, p_vcc);
   end if;
   if(p_state is not null)then
-    insert into viud_one_param_number( ons_id, name, group_level, value_int ) values( p_ons_id, 'state', v_grp_lev_id, p_state );
+    insert into viud_one_param_integer( ons_id, name, group_level, day_begin, value ) values( p_ons_id, 'state', v_grp_lev_id, p_rdate::date, p_state );
   end if;
   if(p_rdate is not null)then
-    insert into viud_one_param_date( ons_id, name, group_level, value_ts ) values( p_ons_id, 'rdate', v_grp_lev_id, p_rdate );
+    insert into viud_one_param_date( ons_id, name, group_level, day_begin, value_ts ) values( p_ons_id, 'rdate', v_grp_lev_id, p_rdate::date, p_rdate );
   end if;
 end;
 $$ language plpgsql;
 
-create function f_get_one_param_number( p_ons_id integer )
+create function f_get_one_param_number( p_ons_id integer, p_report_date date default current_date )
 returns table (
-        group_level integer,
+        group_level bigint,
         temperature float,
         tstate integer,
         humidity float,
@@ -76,45 +76,60 @@ returns table (
       ) as $$
 begin
   return query
-    with opn as (
-      select
+  with
+	  a as (
+	    select
+	          op.name,
             ope.group_level,
-            max(case when op.name = 'temperature' then opn.value_float end) temperature,
-            max(case when op.name = 'tstate' then opn.value_int end) tstate,
-            max(case when op.name = 'humidity' then opn.value_float end) humidity,
-            max(case when op.name = 'hstate' then opn.value_int end) hstate,
-            max(case when op.name = 'altitude' then opn.value_float end) altitude,
-            max(case when op.name = 'astate' then opn.value_int end) astate,
-            max(case when op.name = 'pressure' then opn.value_float end) pressure,
-            max(case when op.name = 'pstate' then opn.value_int end) pstate,
-            max(case when op.name = 'vcc' then opn.value_float end) vcc,
-            max(case when op.name = 'state' then opn.value_int end) state,
-            max(case when op.name = 'test' then opn.value_float end) test
+            opn.value as value_int,
+            cast(null as float) as value_float,
+            cast(null as timestamp) as value_ts
           from one_param op
             join one_param_ext ope on ope.op_id = op.id
-            join one_param_number opn on opn.id = ope.id
+            join one_param_integer opn on opn.id = ope.id
           where ope.ons_id = p_ons_id
-        group by ope.group_level
-      )
+            and ope.day_begin = p_report_date
+      union all
+          select
+            op.name,
+            ope.group_level,
+            null,
+            opf.value,
+            null
+          from one_param op
+            join one_param_ext ope on ope.op_id = op.id
+            join one_param_float opf on opf.id = ope.id
+          where ope.ons_id = p_ons_id
+            and ope.day_begin = p_report_date
+      union all
+          select
+            op.name,
+            ope.group_level,
+            null,
+            null,
+            opd.value_ts
+          from one_param op
+            join one_param_ext ope on ope.op_id = op.id
+            join one_param_date opd on opd.id = ope.id
+          where ope.ons_id = p_ons_id
+            and ope.day_begin = p_report_date
+          )
     select
-      ope.group_level,
-      opn.temperature,
-      opn.tstate,
-      opn.humidity,
-      opn.hstate,
-      opn.altitude,
-      opn.astate,
-      opn.pressure,
-      opn.pstate,
-      oprd.value_ts,
-      opn.vcc,
-      opn.state,
-      opn.test
-    from one_param op
-      join one_param_ext ope on ope.op_id = op.id
-      join one_param_date oprd on oprd.id = ope.id and op.name = 'rdate'
-      join opn on opn.group_level = ope.group_level
-      where ope.ons_id = p_ons_id;
+          a.group_level,
+          max(case when name = 'temperature' then value_float end) temperature,
+          max(case when name = 'tstate' then value_int end) tstate,
+          max(case when name = 'humidity' then value_float end) humidity,
+          max(case when name = 'hstate' then value_int end) hstate,
+          max(case when name = 'altitude' then value_float end) altitude,
+          max(case when name = 'astate' then value_int end) astate,
+          max(case when name = 'pressure' then value_float end) pressure,
+          max(case when name = 'pstate' then value_int end) pstate,
+          max(case when name = 'rdate' then value_ts end) rdate,
+          max(case when name = 'vcc' then value_float end) vcc,
+          max(case when name = 'state' then value_int end) state,
+          max(case when name = 'test' then value_float end) test
+        from a
+      group by a.group_level;
 end;
 $$ language plpgsql;
 

@@ -15,9 +15,9 @@ declare
 begin
   if( tg_op = 'INSERT' )then
     insert into one_param_grp_lev( id ) values( null ) returning id into v_grp_lev_id;
-    insert into viud_one_param_number( ons_id, name, group_level, value_float ) values( c_ons_id::smallint, 'test', v_grp_lev_id, new.value);
-    insert into viud_one_param_number( ons_id, name, group_level, value_int ) values( c_ons_id::smallint, 'state', v_grp_lev_id, new.state );
-    insert into viud_one_param_date( ons_id, name, group_level, value_ts ) values( c_ons_id::smallint, 'rdate', v_grp_lev_id, new.rdate );
+    insert into viud_one_param_float( ons_id, name, group_level, day_begin, value ) values( c_ons_id::smallint, 'test', v_grp_lev_id, new.rdate::date, new.value);
+    insert into viud_one_param_integer( ons_id, name, group_level, day_begin, value ) values( c_ons_id::smallint, 'state', v_grp_lev_id, new.rdate::date, new.state );
+    insert into viud_one_param_date( ons_id, name, group_level, day_begin, value_ts ) values( c_ons_id::smallint, 'rdate', v_grp_lev_id, new.rdate::date, new.rdate );
     return new;
   elsif( tg_op = 'UPDATE' )then
     return null;
@@ -43,7 +43,7 @@ begin isolation level read committed;
 insert into vi_sensor_test( value, rdate, state )
   with ds as (
     SELECT generate_series(
-      '2022-01-01 00:00'::timestamp, -- Start
+      '2023-01-01 00:00'::timestamp, -- Start
       '2026-04-05 00:00'::timestamp, -- End
       '1 minute'::interval            -- Step
     ) AS h )

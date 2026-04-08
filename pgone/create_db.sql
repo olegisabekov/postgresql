@@ -11,5 +11,6 @@ ALTER DATABASE one SET search_path TO haunte;
 ALTER TABLESPACE one_data OWNER TO users_haunte;
 ALTER TABLESPACE one_index OWNER TO users_haunte;
 grant users_haunte to haunte;
-alter tablespace one_index set ( seq_page_cost = 0.9 );
-alter tablespace one_data set ( seq_page_cost = 1 );
+alter tablespace one_index set ( seq_page_cost = 1.3 );
+alter tablespace one_data set ( seq_page_cost = 1.2 );
+alter tablespace default set ( seq_page_cost = 0.9 );
