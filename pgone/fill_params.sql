@@ -75,7 +75,7 @@ declare
 begin
   for rec in 
     with ds as (
-    SELECT generate_series(
+    select generate_series(
       '2024-01-01 00:00'::timestamp, -- Start
       '2026-04-05 00:00'::timestamp, -- End
       '1 minute'::interval            -- Step
@@ -84,4 +84,58 @@ begin
     call p_add_sensor_test(c_ons_id, rec.value, rec.rdate, rec.state);
   end loop;
 end $$;
+commit;
+
+drop view vi_sensor_test3;
+
+create view vi_sensor_test3( str, beg_date ) as
+	    select
+            ops.value as str,
+            ope.day_begin as beg_date
+          from one_param op
+            join one_param_ext ope on ope.op_id = op.id
+            join one_param_string ops on ops.id = ope.id
+          where ope.ons_id = 202;
+ 
+create or replace function fiud_sensor_test3() returns trigger as
+$fiud_sensor_test3$
+declare
+  c_ons_id constant smallint := 202;
+  v_grp_lev_id integer;
+begin
+  if( tg_op = 'INSERT' )then
+    insert into one_param_grp_lev( id ) values( null ) returning id into v_grp_lev_id;
+    insert into viud_one_param_string( ons_id, name, group_level, day_begin, value ) values( c_ons_id, 'str', v_grp_lev_id, new.beg_date::date, new.str);
+    return new;
+  elsif( tg_op = 'UPDATE' )then
+    return null;
+  elsif( tg_op = 'DELETE' )then
+    return null;
+  end if;
+  return null;
+end
+$fiud_sensor_test3$
+language plpgsql;
+
+create or replace trigger t_sensor_test3
+   instead of insert on vi_sensor_test3
+   for each row
+     execute procedure fiud_sensor_test3();
+
+insert into one_namespace( id, name, description ) values( 202, 'str', 'string test storage');
+
+copy (
+  with ds as (
+    SELECT generate_series(
+      '2023-01-01 00:00'::timestamp,
+      '2026-04-05 00:00'::timestamp,
+      '1 minute'::interval
+    ) AS m )
+    select md5( random()::text ) || md5( random()::text ) || md5( random()::text ) as str, m::date as beg_date from ds )
+    TO '/var/lib/pgsql/file.csv'
+with (format csv, delimiter ';', header false);
+
+begin isolation level read committed;
+copy vi_sensor_test3 from '/var/lib/pgsql/file.csv'
+  with (format csv, delimiter ';', header false);
 commit;
