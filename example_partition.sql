@@ -37,6 +37,8 @@ select * from t_example_part
 
 create index t_example_part_inx_dc ON t_example_part (date_create);
 
+create index concurrently t_example_part_y2026m06_t on t_example_part_y2026m06 (text);
+
 select * from t_example_part_y2026m06;
 
 with lst as (
