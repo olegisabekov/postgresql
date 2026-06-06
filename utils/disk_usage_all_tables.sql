@@ -19,3 +19,11 @@ select *,
   pg_size_pretty(toast_bytes) as toast,
   pg_size_pretty(table_bytes) as table
   from t;
+
+ /*
+размер пользовательских таблиц
+pg_total_relation_size(relid)	Total size: Main data + Indexes + TOAST (oversized data).
+pg_table_size(relid)	Table data only: Main data + TOAST (excludes indexes).
+pg_relation_size(relid)	Raw table only: Just the main heap file (excludes indexes and TOAST).
+pg_indexes_size(relid)	Indexes only: Combined size of all indexes on that table.
+*/
