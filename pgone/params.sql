@@ -59,7 +59,7 @@ create table one_param_ext
 
 create index one_param_ext_ons_id on one_param_ext using brin(op_id, ons_id);
 create unique index one_param_ext_group_level_inx on one_param_ext (op_id, group_level);
-create index one_param_ext_dc_inx on one_param_ext( day_create );
+create index one_param_ext_db_inx on one_param_ext( day_begin );
 
 create or replace function fi_one_param_ext_id() returns trigger as 
 $$
