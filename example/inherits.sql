@@ -30,6 +30,10 @@ insert into t_example_car values(2, now(), 'TOSI');
 
 insert into t_example_motorcycle values(1, now(), 'URAL');
 
+select * from t_example_drive limit 20;
+select * from t_example_car limit 20;
+select * from t_example_motorcycle limit 20;
+
 -- select tableoid::regclass, id, day_create from t_example_drive;
 
 explain ( analyze true, buffers true )
