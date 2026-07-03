@@ -1,0 +1,2 @@
+CREATE FUNCTION checklen(text) RETURNS boolean
+   AS 'simple' LANGUAGE C STRICT;
