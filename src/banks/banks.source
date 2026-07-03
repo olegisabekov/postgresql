@@ -1,0 +1,4 @@
+create function account_cck(text, text) returns text
+   as 'banks' language c strict;
+create function check_cck(text, text) returns boolean
+   as 'banks' language c strict;
