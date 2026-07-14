@@ -31,5 +31,16 @@ select
 --    query, -- Текст последнего запроса этого серверного процесса. Если state имеет значение active, то в этом поле отображается запрос, который выполняется в настоящий момент. Если процесс находится в любом другом состоянии, то в этом поле отображается последний выполненный запрос. По умолчанию текст запроса обрезается до 1024 байт; это число определяется параметром track_activity_query_size.
     backend_type -- Тип текущего серверного процесса. Возможные варианты: autovacuum launcher, autovacuum worker, logical replication launcher, logical replication worker, parallel worker, background writer, client backend, checkpointer, archiver, standalone backend, startup, walreceiver, walsender, walwriter и walsummarizer. Кроме того, фоновые рабочие процессы, регистрируемые расширениями, могут иметь дополнительные типы.
 from
-	pg_stat_activity
+	pg_stat_activity,
+  pg_blocking_pids(pid) as pg_blocking_pids
 where lower(backend_type) = 'client backend';
+
+-- ожидание
+select 
+    a.pid, 
+    a.wait_event, 
+    w.description
+  from pg_stat_activity a 
+    -- расшифровка событий
+    join pg_wait_events w on (a.wait_event_type = w.type and a.wait_event = w.name)
+  where a.wait_event is not null and a.state = 'active';
